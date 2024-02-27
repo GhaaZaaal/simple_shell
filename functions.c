@@ -7,11 +7,11 @@ void display_prompt(void)
 {
 	/* char *wd = getcwd(NULL, 0); */
 	/* int wd_len = _strlen(wd); */
-	char *prompt = "($) ";
+	char *prompt = "$ ";
 
 	/* if (write(STDOUT_FILENO, wd, wd_len) == -1) */
 	/* perror("Working Dir Error"); */
-	if (write(STDOUT_FILENO, prompt, 4) == -1)
+	if (write(STDOUT_FILENO, prompt, 2) == -1)
 		perror("Prompt Error");
 
 	fflush(stdout);
