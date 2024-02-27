@@ -1,0 +1,30 @@
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <errno.h>
+
+int _strlen(const char *s);
+char *_strcopy(char *s);
+void _strcpy(char *dest, char *s);
+void _strcat(char *dest, char *s);
+
+char **toknizing_envp_path(char *envp[]);
+void free_array(char *array[]);
+
+void display_prompt(void);
+void get_line(char **cmd_line, size_t cmd_len, char *paths[]);
+
+void execExit(char **cmd_line, int counter);
+char *compare_with_path(char *_1_tok, char *path_array[]);
+int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[]);
+void user_input(char **cmd_line, size_t cmd_len, char *paths[], int cmd_count);
+
+
+#endif
