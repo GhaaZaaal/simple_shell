@@ -45,6 +45,8 @@ void get_line(char **cmd_line, size_t cmd_len, char *paths[])
 	else if ((*cmd_line)[linelen - 1] == '\n')
 	{ /* if user inputs any even if (\n) (! condition to input any) */
 		(*cmd_line)[linelen - 1] = '\0';
+		if (check_if_spaces(*cmd_line) == -1)
+			**cmd_line = '\0';
 	}
 }
 /**
@@ -173,6 +175,15 @@ void user_input(char **c_l, size_t clen, char *paths[], int cct, char *argv[])
 		free(cpy_tok);
 		free_array(paths);
 		execExit(c_l, counter);
+		return;
+	}
+	if (strncmp(cpy_tok, "clear", 5) == 0)
+	{
+		system("clear");
+		fflush(stdout);
+
+		free(cpy_tok);
+		free(*c_l);
 		return;
 	}
 	tok_mch = compare_with_path(cpy_tok, paths);
