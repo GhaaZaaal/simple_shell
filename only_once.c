@@ -87,3 +87,31 @@ void execExit(char **cmd_line, int counter)
 	free(*cmd_line);
 	exit(exit_code);
 }
+
+/**
+ * check_if_spaces - function to check if a string is only spaces
+ *
+ * @cmd_line: the command line entered by the user
+ *
+ * Return: if the string is only spaces -1, otherwise 0
+*/
+int check_if_spaces(char *cmd_line)
+{
+	int i = 0;
+	int x = 0;
+
+	x = _strlen(cmd_line);
+	while (*cmd_line != '\0')
+	{
+		if (strncmp(cmd_line++, " ", 1) == 0)
+		{
+			i++;
+		}
+	}
+	if (i == x)
+	{
+		return (-1);
+	}
+	else
+		return (0);
+}

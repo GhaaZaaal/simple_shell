@@ -24,7 +24,7 @@ int main(int argc, char *argv[], char *envp[])
 		{
 			display_prompt();
 		}
-		user_input(&cmd_line, cmd_len, path_array, counter++);
+		user_input(&cmd_line, cmd_len, path_array, counter++, argv);
 		/* counter++; */
 	}
 	free_array(path_array);

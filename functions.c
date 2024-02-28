@@ -149,8 +149,9 @@ int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[])
  * @clen: the size recommended to allocate that string with
  * @paths: the array of paths strings
  * @cct: number of tokens
+ * @argv: the arguments passed while running the program
  */
-void user_input(char **c_l, size_t clen, char *paths[], int cct)
+void user_input(char **c_l, size_t clen, char *paths[], int cct, char *argv[])
 {
 	char *cmd_copy = NULL, *cpy_tok = NULL, *tok_mch = NULL;
 	int counter = 1;
@@ -179,7 +180,7 @@ void user_input(char **c_l, size_t clen, char *paths[], int cct)
 		_execute_some(tok_mch, *c_l, counter, paths);
 	else
 	{
-		printf("hsh: %d: %s: not found\n", cct, cpy_tok);
+		printf("%s: %d: %s: not found\n", argv[0], cct, cpy_tok);
 		fflush(stdout);
 	}
 	free(cpy_tok), free(*c_l), free(tok_mch);
