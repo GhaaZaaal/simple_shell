@@ -94,7 +94,7 @@ void execExit(char **cmd_line, int counter)
  * @cmd_line: the command line entered by the user
  *
  * Return: if the string is only spaces -1, otherwise 0
-*/
+ */
 int check_if_spaces(char *cmd_line)
 {
 	int i = 0;
@@ -114,4 +114,41 @@ int check_if_spaces(char *cmd_line)
 	}
 	else
 		return (0);
+}
+
+/**
+ * execCd - function to execute cd command
+ *
+ * @cmd: the command line to execute the args
+ * @envp: the environment variable to look for the old path
+ */
+void execCd(char *cmd, char *envp[])
+{
+	int i = 0;
+	char *home_path = NULL;
+	char *cmd_tokp = NULL;
+	char *tokstr = NULL;
+
+	while (envp[i] != NULL)
+	{
+		if (strncmp(envp[i], "HOME", 4) == 0)
+		{
+			home_path = envp[i] + 5;
+			break;
+		}
+		i++;
+	}
+	tokstr = strtok(cmd, " ");
+	if (tokstr != NULL)
+	{
+		tokstr = strtok(NULL, " ");
+		cmd_tokp = tokstr;
+	}
+	else
+		cmd_tokp = NULL;
+
+	if (cmd_tokp == NULL)
+		chdir(home_path);
+	else if (chdir(cmd_tokp) != 0)
+		perror("cd");
 }

@@ -5,12 +5,8 @@
  */
 void display_prompt(void)
 {
-	/* char *wd = getcwd(NULL, 0); */
-	/* int wd_len = _strlen(wd); */
 	char *prompt = "$ ";
 
-	/* if (write(STDOUT_FILENO, wd, wd_len) == -1) */
-	/* perror("Working Dir Error"); */
 	if (write(STDOUT_FILENO, prompt, 2) == -1)
 		perror("Prompt Error");
 
@@ -33,7 +29,7 @@ void get_line(char **cmd_line, size_t cmd_len, char *paths[])
 	linelen = getline(cmd_line, &cmd_len, stdin);
 	if ((int)linelen == -1)
 	{ /* if user press CTRL + D => getline outputs (-1) */
-		putchar('\n');
+		/* putchar('\n'); */
 		free(*cmd_line);
 		free_array(paths);
 		exit(0);
@@ -144,27 +140,29 @@ int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[])
 	return (0);
 }
 /**
- * user_input - Function that gets a line from the user
+ * _input - Function that gets a line from the user
  *				and parses the user input
  *
- * @c_l: the string to store the input command line
- * @clen: the size recommended to allocate that string with
- * @paths: the array of paths strings
+ * @cM: the string to store the input command line
+ * @cL: the size recommended to allocate that string with
+ * @pth: the array of paths strings
  * @cct: number of tokens
  * @argv: the arguments passed while running the program
+ * @ev: environment variables
  */
-void user_input(char **c_l, size_t clen, char *paths[], int cct, char *argv[])
+void _input(char **cM, size_t cL, char *pth[], int cct, char *av[], char *ev[])
 {
 	char *cmd_copy = NULL, *cpy_tok = NULL, *tok_mch = NULL;
 	int counter = 1;
 
-	get_line(c_l, clen, paths);
-	if (**c_l == '\0')
+	get_line(cM, cL, pth);
+	if (**cM == '\0')
 	{
-		free(*c_l);
+		free(*cM);
 		return;
 	}
-	cmd_copy = _strcopy(*c_l);
+	/* printf("--%s--", *cM); */
+	cmd_copy = _strcopy(*cM);
 
 	cpy_tok = _strcopy(strtok(cmd_copy, " "));
 	while (strtok(NULL, " ") != NULL)
@@ -173,8 +171,8 @@ void user_input(char **c_l, size_t clen, char *paths[], int cct, char *argv[])
 	if (strncmp(cpy_tok, "exit", 4) == 0)
 	{
 		free(cpy_tok);
-		free_array(paths);
-		execExit(c_l, counter);
+		free_array(pth);
+		execExit(cM, counter);
 		return;
 	}
 	if (strncmp(cpy_tok, "clear", 5) == 0)
@@ -183,16 +181,22 @@ void user_input(char **c_l, size_t clen, char *paths[], int cct, char *argv[])
 		fflush(stdout);
 
 		free(cpy_tok);
-		free(*c_l);
+		free(*cM);
 		return;
 	}
-	tok_mch = compare_with_path(cpy_tok, paths);
+	if (strncmp(cpy_tok, "cd", 2) == 0)
+	{
+		execCd(*cM, ev);
+		free(cpy_tok), free(*cM);
+		return;
+	}
+	tok_mch = compare_with_path(cpy_tok, pth);
 	if (tok_mch != NULL)
-		_execute_some(tok_mch, *c_l, counter, paths);
+		_execute_some(tok_mch, *cM, counter, ev);
 	else
 	{
-		printf("%s: %d: %s: not found\n", argv[0], cct, cpy_tok);
+		printf("%s: %d: %s: not found\n", av[0], cct, cpy_tok);
 		fflush(stdout);
 	}
-	free(cpy_tok), free(*c_l), free(tok_mch);
+	free(cpy_tok), free(*cM), free(tok_mch);
 }

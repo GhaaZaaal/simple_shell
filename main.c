@@ -17,14 +17,13 @@ int main(int argc, char *argv[], char *envp[])
 	char **path_array = toknizing_envp_path(envp);
 
 	(void)argc;
-	(void)argv;
 	while (1)
 	{
 		if (isatty(fileno(stdin)))
 		{
 			display_prompt();
 		}
-		user_input(&cmd_line, cmd_len, path_array, counter++, argv);
+		_input(&cmd_line, cmd_len, path_array, counter++, argv, envp);
 		/* counter++; */
 	}
 	free_array(path_array);
