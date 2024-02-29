@@ -24,7 +24,7 @@ void get_line(char **cmd_line, size_t cmd_len, char *paths[]);
 void execExit(char **cmd_line, int counter);
 char *compare_with_path(char *_1_tok, char *path_array[]);
 int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[]);
-void _input(char **cM, size_t cL, char *pth[], int cct, char *av[], char *ev[]);
+void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[]);
 int check_if_spaces(char *cmd_line);
 void execCd(char *cmd, char *envp[]);
 

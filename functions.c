@@ -145,43 +145,37 @@ int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[])
  *
  * @cM: the string to store the input command line
  * @cL: the size recommended to allocate that string with
- * @pth: the array of paths strings
+ * @pt: the array of paths strings
  * @cct: number of tokens
- * @argv: the arguments passed while running the program
+ * @av: the arguments passed while running the program
  * @ev: environment variables
  */
-void _input(char **cM, size_t cL, char *pth[], int cct, char *av[], char *ev[])
+void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[])
 {
 	char *cmd_copy = NULL, *cpy_tok = NULL, *tok_mch = NULL;
 	int counter = 1;
 
-	get_line(cM, cL, pth);
+	get_line(cM, cL, pt);
 	if (**cM == '\0')
 	{
 		free(*cM);
 		return;
 	}
-	/* printf("--%s--", *cM); */
 	cmd_copy = _strcopy(*cM);
-
 	cpy_tok = _strcopy(strtok(cmd_copy, " "));
 	while (strtok(NULL, " ") != NULL)
 		counter++;
 	free(cmd_copy);
 	if (strncmp(cpy_tok, "exit", 4) == 0)
 	{
-		free(cpy_tok);
-		free_array(pth);
+		free(cpy_tok), free_array(pt);
 		execExit(cM, counter);
 		return;
 	}
 	if (strncmp(cpy_tok, "clear", 5) == 0)
 	{
 		system("clear");
-		fflush(stdout);
-
-		free(cpy_tok);
-		free(*cM);
+		fflush(stdout), free(cpy_tok), free(*cM);
 		return;
 	}
 	if (strncmp(cpy_tok, "cd", 2) == 0)
@@ -190,13 +184,12 @@ void _input(char **cM, size_t cL, char *pth[], int cct, char *av[], char *ev[])
 		free(cpy_tok), free(*cM);
 		return;
 	}
-	tok_mch = compare_with_path(cpy_tok, pth);
+	tok_mch = compare_with_path(cpy_tok, pt);
 	if (tok_mch != NULL)
 		_execute_some(tok_mch, *cM, counter, ev);
 	else
 	{
-		printf("%s: %d: %s: not found\n", av[0], cct, cpy_tok);
-		fflush(stdout);
+		printf("%s: %d: %s: not found\n", av[0], cct, cpy_tok), fflush(stdout);
 	}
 	free(cpy_tok), free(*cM), free(tok_mch);
 }
