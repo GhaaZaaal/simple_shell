@@ -19,9 +19,9 @@ char **toknizing_envp_path(char *envp[]);
 void free_array(char *array[]);
 
 void display_prompt(void);
-void get_line(char **cmd_line, size_t cmd_len, char *paths[]);
+void get_line(char **cmd_line, size_t cmd_len, char *paths[], int exit_code);
 
-void execExit(char **cmd_line, int counter);
+int execExit(char **cmd_line, int counter, int cct, int exit_code, char *argv);
 char *compare_with_path(char *_1_tok, char *path_array[]);
 int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[]);
 void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[]);

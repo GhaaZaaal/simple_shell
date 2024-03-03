@@ -10,47 +10,48 @@
  */
 char **toknizing_envp_path(char *envp[])
 {
-	int i = 0;
-	char *path_string = NULL;
-	int counter = 1;
-	char *paths_counter = NULL;
-	char **path_toknized = NULL;
-	char *tmp_to_add_to_path_array = NULL;
+	int counter = 1, i = 0;
+	char *path_string = NULL, *paths_counter = NULL;
+	char **path_toknized = NULL, *tmp_to_add_to_path_array = NULL;
 
 	while (envp[i] != NULL)
 	{
-		if (strncmp(envp[i], "PATH", 4) == 0)
+		if (strncmp(envp[i], "PATH=", 5) == 0)
+			if (_strlen(envp[i]) > 5)
+			{
+				path_string = _strcopy(envp[i] + 5); /*  malloced for path string */
+				break;							 /*  + 5 execluded the "PATH=" */
+			}
+		i++;
+	}
+	if (path_string != NULL)
+	{
+		paths_counter = _strcopy(path_string); /* malloced for path copy to count */
+		if (strtok(paths_counter, ":") != NULL)
+			while (strtok(NULL, ":") != NULL)
+				counter++;
+		free(paths_counter); /* freed path copy */
+		path_toknized = (char **)malloc((counter + 1) * sizeof(char *));
+		if (counter > 1) /* ^^^^^malloced for array of strings^^^^^ */
 		{
-			path_string = _strcopy(envp[i] + 5); /*  malloced for path string */
-			break;								 /*  + 5 execluded the "PATH=" */
+			tmp_to_add_to_path_array = strtok(path_string, ":"), i = 0;
+			while (tmp_to_add_to_path_array != NULL)
+			{
+				path_toknized[i] = _strcopy(tmp_to_add_to_path_array);
+				tmp_to_add_to_path_array = strtok(NULL, ":"), i++;
+			}
+			path_toknized[i] = NULL;
 		}
-		i++;
+		else if (counter == 1)
+		{
+			path_toknized[0] = _strcopy(path_string), path_toknized[1] = NULL;
+		}
+		free(path_string);		/* freed path string */
+		return (path_toknized); /*  need to be freed after */
 	}
-
-	paths_counter = _strcopy(path_string); /* malloced for path copy to count */
-	strtok(paths_counter, ":");
-	while (strtok(NULL, ":") != NULL)
-	{
-		counter++;
-	}
-	free(paths_counter); /* freed path copy */
-
-	path_toknized = (char **)malloc((counter + 1) * sizeof(char *));
-	/* malloced for array of strings */
-
-	tmp_to_add_to_path_array = strtok(path_string, ":");
-	i = 0;
-	while (tmp_to_add_to_path_array != NULL)
-	{
-		path_toknized[i] = _strcopy(tmp_to_add_to_path_array);
-		tmp_to_add_to_path_array = strtok(NULL, ":");
-		i++;
-	}
-	path_toknized[i] = NULL;
-	free(path_string); /* freed path string */
-
-	return (path_toknized); /*  need to be freed after */
+	return (NULL);
 }
+
 /**
  * free_array - Function to free an array of strings
  *
@@ -73,16 +74,42 @@ void free_array(char *array[])
  *
  * @cmd_line: the command line entered by the user
  * @counter: the count of tokens in the command line
+ * @cct: the count of the command lines entered by the user
+ * @exit_code: the exit code of the last command
+ * @argv: the name of the program
+ *
+ * Return: the exit code
  */
-void execExit(char **cmd_line, int counter)
+int execExit(char **cmd_line, int counter, int cct, int exit_code, char *argv)
 {
-	int exit_code = 0;
+	char *cmd_copy = NULL;
+	char *tok = NULL;
+	char *msg = "exit: Illegal number";
+	int i, error = 0;
 
 	if (counter > 1)
 	{
-		exit_code = atoi(*cmd_line + 5);
-		free(*cmd_line);
-		exit(exit_code);
+		cmd_copy = _strcopy(*cmd_line);
+		strtok(cmd_copy, " ");
+		tok = _strcopy(strtok(NULL, " "));
+		free(cmd_copy);
+		for (i = 0; tok[i] != '\0'; i++)
+			if (tok[i] < '0' || tok[i] > '9')
+				error = 1;
+
+		if (error != 1)
+		{
+			exit_code = atoi(tok);
+			free(tok);
+			free(*cmd_line);
+			exit(exit_code);
+		}
+		else
+		{
+			fprintf(stderr, "%s: %d: %s: %s\n", argv, cct, msg, tok);
+			free(tok);
+			exit_code = 2;
+		}
 	}
 	free(*cmd_line);
 	exit(exit_code);

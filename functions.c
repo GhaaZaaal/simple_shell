@@ -18,10 +18,11 @@ void display_prompt(void)
  * @cmd_line: buffer to store the line in
  * @cmd_len: the length of the line (modifiable)
  * @paths: the path to check
+ * @exit_code: the exit code of the last command if C+D is pressed
  *
  * Return: -1 if C+D pressed or 0 on success with reading
  */
-void get_line(char **cmd_line, size_t cmd_len, char *paths[])
+void get_line(char **cmd_line, size_t cmd_len, char *paths[], int exit_code)
 {
 	size_t linelen;
 
@@ -31,8 +32,9 @@ void get_line(char **cmd_line, size_t cmd_len, char *paths[])
 	{ /* if user press CTRL + D => getline outputs (-1) */
 		/* putchar('\n'); */
 		free(*cmd_line);
-		free_array(paths);
-		exit(0);
+		if (paths != NULL)
+			free_array(paths);
+		exit(exit_code);
 	}
 	else if (linelen == 1)
 	{
@@ -58,16 +60,22 @@ char *compare_with_path(char *_1_tok, char *path_array[])
 	char *full_path = NULL;
 	char *tmp = "/";
 
-	for (i = 0; path_array[i] != NULL; i++)
+	if (_1_tok[0] == '/')
 	{
-		paLen = _strlen(path_array[i]);
-		cmLen = _strlen(_1_tok);
-		tmpLen = _strlen(tmp);
-		if (_1_tok[0] == '/')
-			full_path = _strcopy(_1_tok);
-
-		else
+		full_path = _strcopy(_1_tok);
+		if (access(full_path, X_OK) == 0)
+		{						/* printf("3aaash ====> %s\n", full_path); */
+			return (full_path); /* need to be freed */
+		}
+		/* printf("full_path: %s\n", full_path); */
+		free(full_path);
+	}
+	else if (path_array != NULL)
+	{
+		for (i = 0; path_array[i] != NULL; i++)
 		{
+			paLen = _strlen(path_array[i]);
+			cmLen = _strlen(_1_tok), tmpLen = _strlen(tmp);
 			full_path = (char *)malloc((paLen + cmLen + tmpLen + 1) * sizeof(char));
 			/* keep malloced if access success */
 			if (full_path == NULL)
@@ -78,18 +86,15 @@ char *compare_with_path(char *_1_tok, char *path_array[])
 			_strcpy(full_path, path_array[i]);
 			if (full_path[paLen - 2] != '/')
 				_strcat(full_path, tmp);
-
 			_strcat(full_path, _1_tok);
+			if (access(full_path, X_OK) == 0)
+			{						/* printf("3aaash ====> %s\n", full_path); */
+				return (full_path); /* need to be freed */
+			}
+			/* printf("full_path: %s\n", full_path); */
+			free(full_path);
 		}
-		if (access(full_path, X_OK) == 0)
-		{
-			/* printf("3aaash ====> %s\n", full_path); */
-			return (full_path); /* need to be freed */
-		}
-		/* printf("full_path: %s\n", full_path); */
-		free(full_path);
 	}
-
 	return (NULL);
 }
 /**
@@ -106,7 +111,7 @@ int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[])
 {
 	char **av = NULL;
 	char *tokstr = NULL;
-	int i = 0, id;
+	int i = 0, id, status = 0;
 
 	av = (char **)malloc((tok_count + 1) * sizeof(char *));
 	if (av == NULL)
@@ -133,9 +138,9 @@ int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[])
 	}
 	else
 	{
-		wait(NULL);
+		waitpid(id, &status, 0);
 		free(av);
-		return (1);
+		return (WEXITSTATUS(status));
 	}
 	return (0);
 }
@@ -154,8 +159,9 @@ void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[])
 {
 	char *cmd_copy = NULL, *cpy_tok = NULL, *tok_mch = NULL;
 	int counter = 1;
+	static int exit_code;
 
-	get_line(cM, cL, pt);
+	get_line(cM, cL, pt, exit_code);
 	if (**cM == '\0')
 	{
 		free(*cM);
@@ -169,14 +175,7 @@ void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[])
 	if (strncmp(cpy_tok, "exit", 4) == 0)
 	{
 		free(cpy_tok), free_array(pt);
-		execExit(cM, counter);
-		return;
-	}
-	if (strncmp(cpy_tok, "clear", 5) == 0)
-	{
-		system("clear");
-		fflush(stdout), free(cpy_tok), free(*cM);
-		return;
+		execExit(cM, counter, cct, exit_code, av[0]);
 	}
 	if (strncmp(cpy_tok, "cd", 2) == 0)
 	{
@@ -186,10 +185,12 @@ void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[])
 	}
 	tok_mch = compare_with_path(cpy_tok, pt);
 	if (tok_mch != NULL)
-		_execute_some(tok_mch, *cM, counter, ev);
+		exit_code = _execute_some(tok_mch, *cM, counter, ev);
 	else
 	{
-		printf("%s: %d: %s: not found\n", av[0], cct, cpy_tok), fflush(stdout);
+		fprintf(stderr, "%s: %d: %s: not found\n", av[0], cct, cpy_tok);
+		fflush(stdout);
+		exit_code = 127;
 	}
 	free(cpy_tok), free(*cM), free(tok_mch);
 }
