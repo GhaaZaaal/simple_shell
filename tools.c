@@ -27,9 +27,13 @@ int _strlen(const char *s)
  */
 char *_strcopy(char *s)
 {
-	int len = _strlen(s);
+	int len = 0;
 	char *copy = NULL;
 
+	if (s == NULL)
+		return (NULL);
+
+	len = _strlen(s);
 	copy = (char *)malloc((len + 1) * sizeof(char));
 	if (copy == NULL)
 	{
@@ -73,4 +77,55 @@ void _strcat(char *dest, char *s)
 		dest[x++] = s[y];
 
 	dest[x] = '\0';
+}
+
+/**
+ * builtin - function that checks for the builtin commands and executes them
+ *
+ * @c_l: command line entered by the user
+ * @pt: the arrays of strings of paths to be freed if exit
+ * @c_c: the command lines entered by the user count
+ * @e_c: the exit code
+ * @av: the first argument of the main function
+ * @ev: the environment variable
+ *
+ * Return: 0 if commands succeeded and 1 otherwise
+ */
+int builtin(char **c_l, char *pt[], int c_c, int *e_c, char *av, char *ev[])
+{
+	char *cpy_tok = NULL;
+	char *cmd_copy = NULL;
+	int hii;
+	int i = 0;
+
+	cmd_copy = _strcopy(*c_l);
+	cpy_tok = _strcopy(strtok(cmd_copy, " "));
+	free(cmd_copy);
+	if (strncmp(cpy_tok, "exit", 4) == 0)
+	{
+		free(cpy_tok);
+		hii = execExit(c_l, pt, c_c, e_c, av);
+		if (hii == 0)
+		{
+			return (0);
+		}
+	}
+	if (strncmp(cpy_tok, "cd", 2) == 0)
+	{
+		execCd(*c_l, ev);
+		free(cpy_tok), free(*c_l);
+		return (0);
+	}
+	if (strncmp(cpy_tok, "env", 3) == 0)
+	{
+		free(cpy_tok), free(*c_l);
+		while (ev[i] != NULL)
+		{
+			printf("%s\n", ev[i]);
+			i++;
+		}
+		return (0);
+	}
+	free(cpy_tok);
+	return (1);
 }

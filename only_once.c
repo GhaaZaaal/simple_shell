@@ -20,7 +20,7 @@ char **toknizing_envp_path(char *envp[])
 			if (_strlen(envp[i]) > 5)
 			{
 				path_string = _strcopy(envp[i] + 5); /*  malloced for path string */
-				break;							 /*  + 5 execluded the "PATH=" */
+				break;								 /*  + 5 execluded the "PATH=" */
 			}
 		i++;
 	}
@@ -72,47 +72,56 @@ void free_array(char *array[])
 /**
  * execExit - function to exit our program
  *
- * @cmd_line: the command line entered by the user
- * @counter: the count of tokens in the command line
+ * @cmd_l: the command line entered by the user
+ * @paths: the arrays of strings of paths
  * @cct: the count of the command lines entered by the user
  * @exit_code: the exit code of the last command
  * @argv: the name of the program
  *
  * Return: the exit code
  */
-int execExit(char **cmd_line, int counter, int cct, int exit_code, char *argv)
+int execExit(char **cmd_l, char *paths[], int cct, int *exit_code, char *argv)
 {
-	char *cmd_copy = NULL;
-	char *tok = NULL;
+	char *cmd_copy = NULL, *cmd_copy2 = NULL, *tok = NULL;
 	char *msg = "exit: Illegal number";
-	int i, error = 0;
+	int i, error = 0, counter = 1;
+
+	cmd_copy = _strcopy(*cmd_l);
+	strtok(cmd_copy, " ");
+	while (strtok(NULL, " ") != NULL)
+		counter++;
+	free(cmd_copy);
 
 	if (counter > 1)
 	{
-		cmd_copy = _strcopy(*cmd_line);
-		strtok(cmd_copy, " ");
+		cmd_copy2 = _strcopy(*cmd_l);
+		strtok(cmd_copy2, " ");
 		tok = _strcopy(strtok(NULL, " "));
-		free(cmd_copy);
 		for (i = 0; tok[i] != '\0'; i++)
 			if (tok[i] < '0' || tok[i] > '9')
+			{
 				error = 1;
-
-		if (error != 1)
+				break;
+			}
+			else
+				error = 2;
+		free(cmd_copy2);
+		if (error == 2)
 		{
-			exit_code = atoi(tok);
-			free(tok);
-			free(*cmd_line);
-			exit(exit_code);
+			*exit_code = atoi(tok), free(tok), free(*cmd_l);
+			free_array(paths);
+			exit(*exit_code);
 		}
-		else
+		else if (error == 1)
 		{
 			fprintf(stderr, "%s: %d: %s: %s\n", argv, cct, msg, tok);
-			free(tok);
-			exit_code = 2;
+			free(tok), free(*cmd_l), *exit_code = 2;
+			return (0);
 		}
 	}
-	free(*cmd_line);
-	exit(exit_code);
+	free(*cmd_l);
+	free_array(paths);
+	exit(*exit_code);
 }
 
 /**

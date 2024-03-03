@@ -60,7 +60,7 @@ char *compare_with_path(char *_1_tok, char *path_array[])
 	char *full_path = NULL;
 	char *tmp = "/";
 
-	if (_1_tok[0] == '/')
+	if (_1_tok[0] == '/' || _1_tok[0] == '.')
 	{
 		full_path = _strcopy(_1_tok);
 		if (access(full_path, X_OK) == 0)
@@ -157,7 +157,7 @@ int _execute_some(char *pathname, char *cmd_line, int tok_count, char *envp[])
  */
 void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[])
 {
-	char *cmd_copy = NULL, *cpy_tok = NULL, *tok_mch = NULL;
+	char *cmd_copy = NULL, *cpy_tok = NULL, *tok_mch = NULL, *cmd_copy2 = NULL;
 	int counter = 1;
 	static int exit_code;
 
@@ -168,21 +168,17 @@ void _input(char **cM, size_t cL, char *pt[], int cct, char *av[], char *ev[])
 		return;
 	}
 	cmd_copy = _strcopy(*cM);
-	cpy_tok = _strcopy(strtok(cmd_copy, " "));
+	strtok(cmd_copy, " ");
 	while (strtok(NULL, " ") != NULL)
 		counter++;
 	free(cmd_copy);
-	if (strncmp(cpy_tok, "exit", 4) == 0)
+	if (builtin(cM, pt, cct, &exit_code, av[0], ev) == 0)
 	{
-		free(cpy_tok), free_array(pt);
-		execExit(cM, counter, cct, exit_code, av[0]);
-	}
-	if (strncmp(cpy_tok, "cd", 2) == 0)
-	{
-		execCd(*cM, ev);
-		free(cpy_tok), free(*cM);
 		return;
 	}
+	cmd_copy2 = _strcopy(*cM);
+	cpy_tok = _strcopy(strtok(cmd_copy2, " "));
+	free(cmd_copy2);
 	tok_mch = compare_with_path(cpy_tok, pt);
 	if (tok_mch != NULL)
 		exit_code = _execute_some(tok_mch, *cM, counter, ev);
